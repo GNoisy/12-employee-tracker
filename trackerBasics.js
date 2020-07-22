@@ -16,4 +16,47 @@ var connection = mysql.createConnection({
     database: "employeeTracker_DB"
 });
 
+function init() {
+    inquirer
+      .prompt({
+        name: "choice",
+        type: "rawlist",
+        message: "What would you like to do?",
+        choices: [
+          "Add Department",
+          "Add Role",
+          "Add Employee",
+          "View Department",
+          "View Role",
+          "View Employee"
+        ]
+    })
+      .then(function(answer) {
+        switch (answer.action) {
+        case "Add Department":
+            addDepartment();
+            break;
 
+        case "Add Role":
+            addRole();
+            break;
+
+        case "Add Employee":
+            addEmployee();
+            break;
+
+        case "View Department":
+            viewDepartment();
+            break;
+
+        case "View Role":
+            viewRole();
+            break;
+
+        case "View Role":
+            viewRole();
+            break;
+        }
+    });
+}
+init();
