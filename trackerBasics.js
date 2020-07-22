@@ -16,6 +16,12 @@ var connection = mysql.createConnection({
     database: "employeeTracker_DB"
 });
 
+connection.connect(function(err) {
+    if (err) throw err;
+    console.log("connected as id " + connection.threadId);
+    init();
+});
+
 function init() {
     inquirer
       .prompt({
@@ -53,10 +59,26 @@ function init() {
             viewRole();
             break;
 
-        case "View Role":
-            viewRole();
+        case "View Employee":
+            viewEmployee();
+            break;
+
+        case "Update Employee Role":
+            updateEmployeeRole();
             break;
         }
     });
 }
 init();
+
+function addDepartment() {
+    inquirer.prompt({
+      message: "Enter the department name: ",
+      type: "input",
+      name: "name"
+    })
+      .then(function(answer) {
+        connection.query('INSERT INTO department (name) VALUES (?)', [answer.name]);
+        init();
+      })
+}
