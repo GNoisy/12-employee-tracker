@@ -152,3 +152,11 @@ function viewDepartment(){
         init();
     })
 }
+
+function viewRole(){
+    connection.query("SELECT * FROM role", function(err, results){
+        if (err) throw err;
+        console.table(results);
+        init();
+    })
+}
