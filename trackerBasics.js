@@ -160,3 +160,11 @@ function viewRole(){
         init();
     })
 }
+
+function viewEmployee(){
+    connection.query("SELECT * FROM employee", function(err, results){
+        if (err) throw err;
+        console.table(results);
+        init();
+    })
+}
