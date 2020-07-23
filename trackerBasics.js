@@ -71,6 +71,7 @@ function addDepartment() {
       name: "name"
     })
       .then(function(answer) {
+          console.table(answer);
         connection.queryPromise("INSERT INTO department (name) VALUES (?)", [answer.name]);
         init();
       })
@@ -105,7 +106,7 @@ function addRole() {
         ])
     })
       .then(function(answer) {
-        console.log(answer);
+        console.table(answer);
         connection.queryPromise("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)", [answer.title, answer.salary, answer.department_id]);
         init();
       })
@@ -113,33 +114,41 @@ function addRole() {
 
 function addEmployee() {
     connection.queryPromise("SELECT * FROM role")
-    .then(function(employees) {
+    .then(function(roles) {
         return inquirer.prompt([
-        {
-            message: "Enter First Name",
-            type: "input",
-            name: first_name
-        },
-        {
-            message: "Enter Last Name",
-            type: "input",
-            name: last_name
-        },
-        {
-            message: "Enter Role ID",
-            type: "input",
-            name: role_id
-        },
-        {
-            message: "Enter Manager ID",
-            type: "input",
-            name: manager_id
-        },
+            {
+                message: "Enter First Name",
+                type: "input",
+                name: "first_name"
+            },
+            {
+                message: "Enter Last Name",
+                type: "input",
+                name: "last_name"
+            },
+            {
+                message: "Enter Role ID",
+                type: "input",
+                name: "role_id"
+            },
+            {
+                message: "Enter Manager ID",
+                type: "input",
+                name: "manager_id"
+            },
 
         ])
     })
       .then(function(answer) {
-          console.log(answer);
+          console.table(answer);
           connection.queryPromise("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [answer.first_name, answer.last_name, answer.role_id, answer.manager_id]);
       })
+}
+
+function viewDepartment(){
+    connection.query("SELECT * FROM department", function(err, results){
+        if (err) throw err;
+        console.table(results);
+        init();
+    })
 }
