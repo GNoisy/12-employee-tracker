@@ -1,7 +1,6 @@
 const mysql = require('mysql');
 const util = require("util");
 const inquirer = require("inquirer");
-const cTable = require('console.table');
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -20,12 +19,6 @@ var connection = mysql.createConnection({
 connection.connect();
 connection.queryPromise = util.promisify(connection.query);
 
-// connection.connect(function(err) {
-//     if (err) throw err;
-//     console.log("connected as id " + connection.threadId);
-//     init();
-// });
-
 function init() {
     inquirer
       .prompt({
@@ -38,7 +31,8 @@ function init() {
           "Add Employee",
           "View Department",
           "View Role",
-          "View Employee"
+          "View Employee",
+          "Update Employee Role"
         ]
     })
       .then(function(answer) {
@@ -59,6 +53,9 @@ function init() {
         }
         if (answer.choice === "View Employee") {
             viewEmployee();
+        }
+        if (answer.choice === "Update Employee Role") {
+            updateEmployeeRole();
         }
     })
 }
@@ -112,37 +109,59 @@ function addRole() {
       })
 }
 
-function addEmployee() {
-    connection.queryPromise("SELECT * FROM role")
-    .then(function(roles) {
-        return inquirer.prompt([
-            {
-                message: "Enter First Name",
-                type: "input",
-                name: "first_name"
-            },
-            {
-                message: "Enter Last Name",
-                type: "input",
-                name: "last_name"
-            },
-            {
-                message: "Enter Role ID",
-                type: "input",
-                name: "role_id"
-            },
-            {
-                message: "Enter Manager ID",
-                type: "input",
-                name: "manager_id"
-            },
-
-        ])
-    })
-      .then(function(answer) {
-          console.table(answer);
-          connection.queryPromise("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [answer.first_name, answer.last_name, answer.role_id, answer.manager_id]);
-      })
+function addEmployee(){
+    connection.queryPromise('SELECT * FROM role')
+    .then(function(roles){
+        connection.queryPromise('SELECT * FROM employee')
+            .then(function(employees) {
+                employees = employees.map(function (employee) {
+                    return {
+                        value: employee.id,
+                        name: employee.first_name + ' ' + employee.last_name,
+                    }
+                })
+                employees.push({ name: 'None', value: 'none' });
+                inquirer.prompt([
+                    {
+                        name: 'first_name',
+                        message: 'Enter the first name: ',
+                        type: 'input',
+                    },
+                    {
+                        name: 'last_name',
+                        message: "Enter the last name: ",
+                        type: "input",
+                    },
+                    {
+                        message: "Select the role for the employee",
+                        name: "role_id",
+                        type: "list",
+                        choices: roles.map(function(role){
+                            return {
+                                name: role.title,
+                                value: role.id,
+                            }
+                        })
+                    },
+                    {
+                        message: "Select the manager: ",
+                        name: "manager_id",
+                        type: "list",
+                        choices: employees
+                    }
+                ]).then(function(answers){
+                    console.log(answers);
+                    if (answers.manager_id === 'none') {
+                        connection.queryPromise('INSERT INTO employee (first_name, last_name, role_id) VALUES ( ?, ?, ?)', [answers.first_name, answers.last_name, answers.role_id]);
+                    }else{
+                        connection.queryPromise('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ( ?, ?, ?, ?)', [answers.first_name, answers.last_name, answers.role_id, answers.manager_id]);
+                        
+                    }
+                    init();
+                });
+            });
+       
+    });
 }
 
 function viewDepartment(){
@@ -166,5 +185,44 @@ function viewEmployee(){
         if (err) throw err;
         console.table(results);
         init();
+    })
+}
+
+function updateEmployeeRole(){
+    connection.query("SELECT * FROM role", function(err, results){
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "update",
+                    type: "rawlist",
+                    choices: function(){
+                        var choiceArray = [];
+                        for (var i=0; i<results.length; i++){
+                            choiceArray.push(results[i].id);
+                        }
+                        return choiceArray;
+                    },
+                    message: "Which role do you like to update?"
+                },
+                {
+                    name: "title",
+                    type: "input",
+                    message: "What's the title of the role you'd like to update?"
+                },
+                {
+                    name: "salary",
+                    type: "input",
+                    message: "What's the salary of the role you want to update?"
+                },
+                {
+                    name: "department",
+                    type: "input",
+                    message: "What's the department to update role?"
+                }
+            ])
+            .then(function(answer){
+                connection.query()
+            })
     })
 }
