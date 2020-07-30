@@ -20,7 +20,7 @@ connection.connect(function(err){
     if (err){
         return console.error("error: " + err.message);
     }
-    console.log("Connected to the MySql server");
+    
 });
 connection.queryPromise = util.promisify(connection.query);
 
